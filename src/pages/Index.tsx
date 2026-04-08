@@ -1,16 +1,37 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Search, MoreVertical } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import HeroSlider from "@/components/HeroSlider";
+import ContentSection from "@/components/ContentSection";
+import BottomNav from "@/components/BottomNav";
+import { getLatest, getMovies, getSeries } from "@/data/mockData";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen gradient-dark pb-24">
+      {/* Top Bar */}
+      <div className="flex items-center justify-between px-4 py-4 md:px-8">
+        <button onClick={() => navigate("/search")} className="p-2 rounded-xl hover:bg-secondary transition-colors">
+          <Search className="w-5 h-5 text-muted-foreground" />
+        </button>
+        <h1 className="text-xl font-bold text-gradient tracking-tight">CINEMAX</h1>
+        <button className="p-2 rounded-xl hover:bg-secondary transition-colors">
+          <MoreVertical className="w-5 h-5 text-muted-foreground" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="px-4 md:px-8 space-y-6">
+        <HeroSlider />
+        <ContentSection title="🔥 Latest Releases" movies={getLatest()} onViewMore={() => {}} />
+        <ContentSection title="🎬 Movies" movies={getMovies()} onViewMore={() => {}} />
+        <ContentSection title="📺 Series" movies={getSeries()} onViewMore={() => {}} />
+      </div>
+
+      <BottomNav />
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
