@@ -42,7 +42,7 @@ const SearchPage = () => {
             <p className="text-sm">Try a different search term</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4">
+          <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 md:gap-3">
             {results.map((movie) => (
               <MovieCard key={movie.id} movie={movie} />
             ))}

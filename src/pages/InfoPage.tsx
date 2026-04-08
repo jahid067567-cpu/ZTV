@@ -17,29 +17,26 @@ const InfoPage = () => {
 
   return (
     <div className="min-h-screen gradient-dark pb-28">
-      {/* Back Button */}
-      <div className="px-4 py-4 md:px-8">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-secondary transition-colors">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Poster */}
-      <div className="px-4 md:px-8 mb-6">
-        <div className="relative rounded-2xl overflow-hidden aspect-[2/3] max-w-sm mx-auto shadow-2xl">
-          <img src={movie.poster} alt={movie.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-primary fill-primary" />
-              <span className="text-lg font-bold text-primary">{movie.rating}</span>
-              <span className="text-sm text-muted-foreground">/ 10</span>
-            </div>
-          </div>
+      {/* Banner Poster */}
+      <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden">
+        <img src={movie.backdrop} alt={movie.title} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/60 to-transparent" />
+        {/* Back Button */}
+        <div className="absolute top-4 left-4 md:left-8 z-10">
+          <button onClick={() => navigate(-1)} className="p-2 rounded-xl glass hover:bg-secondary transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+        </div>
+        {/* Rating on banner */}
+        <div className="absolute bottom-4 left-4 md:left-8 flex items-center gap-2">
+          <Star className="w-5 h-5 text-primary fill-primary" />
+          <span className="text-lg font-bold text-primary">{movie.rating}</span>
+          <span className="text-sm text-muted-foreground">/ 10</span>
         </div>
       </div>
 
-      <div className="px-4 md:px-8 max-w-2xl mx-auto">
+      <div className="px-4 md:px-8 max-w-2xl mx-auto -mt-6 relative z-10">
         {/* Title */}
         <h1 className="text-2xl md:text-3xl font-bold mb-2">{movie.title}</h1>
         

@@ -24,9 +24,9 @@ const Index = () => {
       {/* Content */}
       <div className="px-4 md:px-8 space-y-6">
         <HeroSlider />
-        <ContentSection title="🔥 Latest Releases" movies={getLatest()} onViewMore={() => {}} />
-        <ContentSection title="🎬 Movies" movies={getMovies()} onViewMore={() => {}} />
-        <ContentSection title="📺 Series" movies={getSeries()} onViewMore={() => {}} />
+        <ContentSection title="🔥 Latest Releases" movies={getLatest()} onViewMore={() => navigate("/latest")} />
+        <ContentSection title="🎬 Movies" movies={getMovies()} onViewMore={() => navigate("/movies")} />
+        <ContentSection title="📺 Series" movies={getSeries()} onViewMore={() => navigate("/series")} />
       </div>
 
       <BottomNav />

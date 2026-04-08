@@ -8,7 +8,7 @@ const MovieCard = ({ movie }: { movie: Movie }) => {
   return (
     <button
       onClick={() => navigate(`/info/${movie.id}`)}
-      className="flex-shrink-0 w-[140px] md:w-[180px] group text-left"
+      className="flex-shrink-0 w-[140px] md:w-[180px] group text-left min-w-0"
     >
       <div className="relative overflow-hidden rounded-xl mb-2 aspect-[2/3]">
         <img

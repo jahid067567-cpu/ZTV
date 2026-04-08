@@ -8,6 +8,9 @@ import SearchPage from "./pages/SearchPage.tsx";
 import InfoPage from "./pages/InfoPage.tsx";
 import DownloadPage from "./pages/DownloadPage.tsx";
 import LibraryPage from "./pages/LibraryPage.tsx";
+import LatestPage from "./pages/LatestPage.tsx";
+import MoviesPage from "./pages/MoviesPage.tsx";
+import SeriesPage from "./pages/SeriesPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -24,6 +27,9 @@ const App = () => (
           <Route path="/info/:id" element={<InfoPage />} />
           <Route path="/download/:id" element={<DownloadPage />} />
           <Route path="/library" element={<LibraryPage />} />
+          <Route path="/latest" element={<LatestPage />} />
+          <Route path="/movies" element={<MoviesPage />} />
+          <Route path="/series" element={<SeriesPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
