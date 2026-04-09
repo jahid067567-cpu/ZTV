@@ -25,19 +25,21 @@ const ApiContentSection = ({ title, items, loading, onViewMore }: ApiContentSect
         )}
       </div>
       {loading ? (
-        <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-[140px] md:w-[180px]">
+        <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex-shrink-0 w-[120px] sm:w-[140px] md:w-[160px]">
               <div className="aspect-[2/3] rounded-xl bg-secondary animate-pulse mb-2" />
-              <div className="h-4 bg-secondary rounded animate-pulse mb-1" />
-              <div className="h-3 bg-secondary rounded animate-pulse w-2/3" />
+              <div className="h-3 bg-secondary rounded animate-pulse mb-1" />
+              <div className="h-2.5 bg-secondary rounded animate-pulse w-2/3" />
             </div>
           ))}
         </div>
       ) : (
-        <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
+        <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
           {items.map((item) => (
-            <ApiMovieCard key={item.id} item={item} />
+            <div key={item.id} className="flex-shrink-0 w-[120px] sm:w-[140px] md:w-[160px]">
+              <ApiMovieCard item={item} />
+            </div>
           ))}
         </div>
       )}

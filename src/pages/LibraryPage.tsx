@@ -1,107 +1,156 @@
-import { ArrowLeft, Download, Pause, CheckCircle, Clock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Download, CheckCircle, Trash2, Film, Tv, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { mockDownloads } from "@/data/mockData";
 import BottomNav from "@/components/BottomNav";
-
-const statusIcon = {
-  downloading: <Download className="w-4 h-4 text-primary animate-pulse" />,
-  completed: <CheckCircle className="w-4 h-4 text-primary" />,
-  paused: <Pause className="w-4 h-4 text-muted-foreground" />,
-};
-
-const statusLabel = {
-  downloading: "Downloading",
-  completed: "Completed",
-  paused: "Paused",
-};
+import {
+  getDownloadHistory,
+  clearDownloadHistory,
+  formatDownloadDate,
+  type DownloadRecord,
+} from "@/lib/downloadHistory";
 
 const LibraryPage = () => {
   const navigate = useNavigate();
-  const completed = mockDownloads.filter((d) => d.status === "completed");
-  const active = mockDownloads.filter((d) => d.status !== "completed");
+  const [history, setHistory] = useState<DownloadRecord[]>([]);
+  const [confirmClear, setConfirmClear] = useState(false);
+
+  // Read from localStorage on mount and whenever the tab gets focus
+  useEffect(() => {
+    const load = () => setHistory(getDownloadHistory());
+    load();
+    window.addEventListener("focus", load);
+    return () => window.removeEventListener("focus", load);
+  }, []);
+
+  const handleClear = () => {
+    if (confirmClear) {
+      clearDownloadHistory();
+      setHistory([]);
+      setConfirmClear(false);
+    } else {
+      setConfirmClear(true);
+      setTimeout(() => setConfirmClear(false), 3000);
+    }
+  };
 
   return (
-    <div className="min-h-screen gradient-dark pb-24">
+    <div className="min-h-screen gradient-dark pb-28">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-4 md:px-8">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-secondary transition-colors">
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border/30 px-4 py-3 md:px-8 flex items-center gap-3">
+        <button
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-xl hover:bg-secondary transition-colors flex-shrink-0"
+        >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-bold">Library</h1>
+        <h1 className="text-lg font-bold flex-1">Library</h1>
+        {history.length > 0 && (
+          <button
+            onClick={handleClear}
+            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-all ${
+              confirmClear
+                ? "bg-red-500/20 text-red-400"
+                : "bg-secondary text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            {confirmClear ? "Tap to confirm" : "Clear"}
+          </button>
+        )}
       </div>
 
-      <div className="px-4 md:px-8 max-w-2xl mx-auto">
-        {/* Active Downloads */}
-        {active.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-primary" />
-              Active Downloads
-            </h2>
+      <div className="px-4 md:px-8 max-w-2xl mx-auto mt-5">
+        {history.length === 0 ? (
+          /* Empty state */
+          <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+            <div className="w-20 h-20 rounded-full bg-secondary/60 flex items-center justify-center mb-4">
+              <Download className="w-9 h-9 opacity-30" />
+            </div>
+            <p className="text-base font-semibold mb-1">No downloads yet</p>
+            <p className="text-sm opacity-60 text-center max-w-xs">
+              When you tap any download link, it will be tracked here automatically.
+            </p>
+          </div>
+        ) : (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle className="w-4 h-4 text-primary" />
+              <h2 className="text-base font-bold">Download History</h2>
+              <span className="ml-auto text-xs text-muted-foreground bg-secondary px-2.5 py-0.5 rounded-full">
+                {history.length}
+              </span>
+            </div>
+
             <div className="space-y-3">
-              {active.map((item) => (
-                <div key={item.id} className="glass rounded-xl p-4 animate-slide-in">
-                  <div className="flex gap-3">
-                    <div className="w-16 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                      <img src={item.poster} alt={item.title} className="w-full h-full object-cover" />
+              {history.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => navigate(`/info/${item.contentId}`)}
+                  className="w-full glass rounded-xl p-3.5 flex gap-3 text-left hover:bg-surface-hover transition-colors"
+                >
+                  {/* Poster */}
+                  <div className="w-11 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-secondary">
+                    {item.poster ? (
+                      <img
+                        src={item.poster}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Film className="w-4 h-4 text-muted-foreground/40" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-1.5 mb-0.5">
+                      <h3 className="text-sm font-semibold truncate flex-1">{item.title}</h3>
+                      {/* Type badge */}
+                      <span
+                        className={`flex-shrink-0 inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase ${
+                          item.type === "series"
+                            ? "bg-blue-500/20 text-blue-400"
+                            : "bg-primary/20 text-primary"
+                        }`}
+                      >
+                        {item.type === "series" ? (
+                          <><Tv className="w-2.5 h-2.5" />TV</>
+                        ) : (
+                          <><Film className="w-2.5 h-2.5" />Film</>
+                        )}
+                      </span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-1">
-                        <h3 className="text-sm font-semibold truncate pr-2">{item.title}</h3>
-                        {statusIcon[item.status]}
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        {item.quality} • {item.size} • {statusLabel[item.status]}
+
+                    {/* Season / Episode */}
+                    {(item.season !== undefined || item.episode) && (
+                      <p className="text-xs text-primary font-medium truncate mb-0.5">
+                        {item.season !== undefined && `Season ${item.season}`}
+                        {item.season !== undefined && item.episode && " · "}
+                        {item.episode}
                       </p>
-                      {/* Progress Bar */}
-                      <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-                        <div
-                          className="h-full gradient-primary rounded-full transition-all duration-500"
-                          style={{ width: `${item.progress}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-primary font-semibold mt-1">{item.progress}%</p>
+                    )}
+
+                    <p className="text-xs text-muted-foreground truncate">
+                      {item.quality} · {item.server}
+                    </p>
+
+                    <div className="flex items-center gap-1 mt-1">
+                      <Clock className="w-2.5 h-2.5 text-muted-foreground/50" />
+                      <p className="text-[10px] text-muted-foreground/50">
+                        {formatDownloadDate(item.downloadedAt)}
+                      </p>
                     </div>
                   </div>
-                </div>
+
+                  <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 self-center" />
+                </button>
               ))}
             </div>
           </section>
         )}
-
-        {/* Completed */}
-        <section>
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-primary" />
-            Download History
-          </h2>
-          {completed.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Download className="w-12 h-12 mx-auto mb-3 opacity-20" />
-              <p className="text-sm">No downloads yet</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {completed.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => navigate(`/info/${item.movieId}`)}
-                  className="w-full glass rounded-xl p-4 flex gap-3 text-left hover:bg-surface-hover transition-colors animate-slide-in"
-                >
-                  <div className="w-12 h-18 rounded-lg overflow-hidden flex-shrink-0">
-                    <img src={item.poster} alt={item.title} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold truncate">{item.title}</h3>
-                    <p className="text-xs text-muted-foreground">{item.quality} • {item.size}</p>
-                    <p className="text-xs text-muted-foreground">{item.date}</p>
-                  </div>
-                  <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 self-center" />
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
       </div>
 
       <BottomNav />
