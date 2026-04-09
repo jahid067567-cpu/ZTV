@@ -155,3 +155,9 @@ export async function fetchOmdb(imdbId: string): Promise<OmdbData | null> {
     return null;
   }
 }
+
+export async function fetchDownloadLinks(id: string, season: number, quality: number): Promise<ApiDownloadResponse> {
+  const res = await fetch(`${BASE_URL}/api/download?id=${encodeURIComponent(id)}&se=${season}&quality=${quality}`);
+  if (!res.ok) throw new Error("Failed to fetch download links");
+  return res.json();
+}
