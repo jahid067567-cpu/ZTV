@@ -1,7 +1,7 @@
-import { ArrowLeft, Star, Download, Globe, Calendar, Film, Clock } from "lucide-react";
+import { ArrowLeft, Star, Download, Globe, Calendar, Film, Clock, Tv, Award, User } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchInfo, fetchOmdb, cleanTitle } from "@/lib/api";
+import { fetchInfo, fetchOmdb, cleanTitle, parseSeasonsCount } from "@/lib/api";
 
 const InfoPage = () => {
   const { id } = useParams();
@@ -45,78 +45,71 @@ const InfoPage = () => {
   const info = infoData.data;
   const title = cleanTitle(info.title);
   const posterUrl = omdbData?.Poster && omdbData.Poster !== "N/A" ? omdbData.Poster : null;
-  const bannerUrl = info.images?.[0] || posterUrl || "";
+  const bannerUrl = posterUrl || info.images?.[0] || "";
   const rating = omdbData?.imdbRating || "";
   const year = omdbData?.Year || "";
   const runtime = omdbData?.Runtime || "";
+  const rated = omdbData?.Rated || "";
   const genres = omdbData?.Genre?.split(", ") || [];
   const plot = omdbData?.Plot || info.description || "";
   const actors = omdbData?.Actors?.split(", ") || [];
   const director = omdbData?.Director || "";
-  const description = info.description || "";
   const images = info.images || [];
+  const totalSeasons = omdbData?.totalSeasons ? parseInt(omdbData.totalSeasons) : parseSeasonsCount(info.seasons);
+  const contentType = omdbData?.Type || (totalSeasons > 1 ? "series" : "movie");
 
-  // Parse language from info
   const langMatch = info.language?.match(/^([^\n]+)/);
   const language = langMatch ? langMatch[1].trim() : "Dual Audio";
 
   return (
     <div className="min-h-screen gradient-dark pb-28">
-      {/* Banner */}
-      <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden">
+      {/* Banner - full width cinematic */}
+      <div className="relative w-full aspect-[2/3] max-h-[70vh] md:aspect-[16/9] overflow-hidden">
         {bannerUrl ? (
-          <img src={bannerUrl} alt={title} className="w-full h-full object-cover" />
+          <img src={bannerUrl} alt={title} className="w-full h-full object-cover md:object-top" />
         ) : (
           <div className="w-full h-full bg-secondary" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/40 to-transparent" />
+
         {/* Back Button */}
         <div className="absolute top-4 left-4 md:left-8 z-10">
           <button onClick={() => navigate(-1)} className="p-2 rounded-xl glass hover:bg-secondary transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
         </div>
-        {/* Rating on banner */}
-        {rating && (
-          <div className="absolute bottom-4 left-4 md:left-8 flex items-center gap-2">
-            <Star className="w-5 h-5 text-primary fill-primary" />
-            <span className="text-lg font-bold text-primary">{rating}</span>
-            <span className="text-sm text-muted-foreground">/ 10</span>
-          </div>
-        )}
-      </div>
 
-      <div className="px-4 md:px-8 max-w-2xl mx-auto -mt-6 relative z-10">
-        {/* Poster + Title row */}
-        <div className="flex gap-4 mb-4">
-          {posterUrl && (
-            <div className="flex-shrink-0 w-24 md:w-32 rounded-xl overflow-hidden shadow-2xl -mt-12 ring-2 ring-primary/30">
-              <img src={posterUrl} alt={title} className="w-full h-full object-cover" />
-            </div>
-          )}
-          <div className="flex-1 pt-2">
-            <h1 className="text-xl md:text-2xl font-bold mb-2">{title}</h1>
-            {/* Genres */}
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {genres.map((g) => (
-                <span key={g} className="text-xs px-2.5 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium">
-                  {g}
-                </span>
-              ))}
-            </div>
-            {/* Quality badge */}
-            {info.quality && (
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium">
-                {info.quality.split("\n")[0]}
-              </span>
+        {/* Bottom overlay info */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2 drop-shadow-lg">{title}</h1>
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            {rating && (
+              <div className="flex items-center gap-1">
+                <Star className="w-4 h-4 text-primary fill-primary" />
+                <span className="text-sm font-bold text-primary">{rating}</span>
+                <span className="text-xs text-muted-foreground">/10</span>
+              </div>
             )}
+            {year && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/80 text-secondary-foreground">{year}</span>}
+            {rated && rated !== "N/A" && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/80 text-secondary-foreground">{rated}</span>}
+            {runtime && runtime !== "N/A" && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/80 text-secondary-foreground">{runtime}</span>}
+            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-medium capitalize">{contentType}</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {genres.map((g) => (
+              <span key={g} className="text-xs px-2.5 py-0.5 rounded-full bg-secondary/60 text-secondary-foreground font-medium backdrop-blur-sm">
+                {g}
+              </span>
+            ))}
           </div>
         </div>
+      </div>
 
+      <div className="px-4 md:px-8 max-w-2xl mx-auto mt-4 relative z-10">
         {/* Description */}
         <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-          {plot || description}
+          {plot}
         </p>
 
         {/* Info Grid */}
@@ -153,7 +146,51 @@ const InfoPage = () => {
               <p className="text-sm font-semibold">{info.quality?.split("\n")[0] || "HD"}</p>
             </div>
           </div>
+          {rated && rated !== "N/A" && (
+            <div className="glass rounded-xl p-3 flex items-center gap-2">
+              <Award className="w-4 h-4 text-primary" />
+              <div>
+                <p className="text-xs text-muted-foreground">Rated</p>
+                <p className="text-sm font-semibold">{rated}</p>
+              </div>
+            </div>
+          )}
+          {contentType === "series" && totalSeasons > 0 && (
+            <div className="glass rounded-xl p-3 flex items-center gap-2">
+              <Tv className="w-4 h-4 text-primary" />
+              <div>
+                <p className="text-xs text-muted-foreground">Seasons</p>
+                <p className="text-sm font-semibold">{totalSeasons}</p>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Season boxes for series */}
+        {contentType === "series" && totalSeasons > 1 && (
+          <div className="mb-6">
+            <h2 className="text-lg font-bold mb-3">Seasons</h2>
+            <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+              {Array.from({ length: totalSeasons }, (_, i) => i + 1).map((s) => (
+                <div key={s} className="flex-shrink-0 glass rounded-xl px-5 py-3 text-center min-w-[70px]">
+                  <p className="text-xs text-muted-foreground">Season</p>
+                  <p className="text-lg font-bold text-primary">{s}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Director */}
+        {director && director !== "N/A" && (
+          <div className="glass rounded-xl p-3 mb-6 flex items-center gap-2">
+            <User className="w-4 h-4 text-primary" />
+            <div>
+              <p className="text-xs text-muted-foreground">Director</p>
+              <p className="text-sm font-semibold">{director}</p>
+            </div>
+          </div>
+        )}
 
         {/* Cast (from OMDB) */}
         {actors.length > 0 && actors[0] !== "N/A" && (
@@ -172,13 +209,6 @@ const InfoPage = () => {
               ))}
             </div>
           </>
-        )}
-
-        {director && director !== "N/A" && (
-          <div className="glass rounded-xl p-3 mb-6">
-            <p className="text-xs text-muted-foreground">Director</p>
-            <p className="text-sm font-semibold">{director}</p>
-          </div>
         )}
 
         {/* Screenshots */}
