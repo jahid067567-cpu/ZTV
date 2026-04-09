@@ -1,12 +1,28 @@
 import { Search, MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import HeroSlider from "@/components/HeroSlider";
-import ContentSection from "@/components/ContentSection";
+import { useQuery } from "@tanstack/react-query";
+import ApiHeroSlider from "@/components/ApiHeroSlider";
+import ApiContentSection from "@/components/ApiContentSection";
 import BottomNav from "@/components/BottomNav";
-import { getLatest, getMovies, getSeries } from "@/data/mockData";
+import { fetchLatestReleases, fetchMovies, fetchSeries } from "@/lib/api";
 
 const Index = () => {
   const navigate = useNavigate();
+
+  const { data: latestData, isLoading: latestLoading } = useQuery({
+    queryKey: ["latest"],
+    queryFn: () => fetchLatestReleases(),
+  });
+
+  const { data: moviesData, isLoading: moviesLoading } = useQuery({
+    queryKey: ["movies", 1],
+    queryFn: () => fetchMovies(1),
+  });
+
+  const { data: seriesData, isLoading: seriesLoading } = useQuery({
+    queryKey: ["series", 1],
+    queryFn: () => fetchSeries(1),
+  });
 
   return (
     <div className="min-h-screen gradient-dark pb-24">
@@ -23,10 +39,25 @@ const Index = () => {
 
       {/* Content */}
       <div className="px-4 md:px-8 space-y-6">
-        <HeroSlider />
-        <ContentSection title="🔥 Latest Releases" movies={getLatest()} onViewMore={() => navigate("/latest")} />
-        <ContentSection title="🎬 Movies" movies={getMovies()} onViewMore={() => navigate("/movies")} />
-        <ContentSection title="📺 Series" movies={getSeries()} onViewMore={() => navigate("/series")} />
+        <ApiHeroSlider items={latestData?.data || []} />
+        <ApiContentSection
+          title="🔥 Latest Releases"
+          items={latestData?.data?.slice(0, 10) || []}
+          loading={latestLoading}
+          onViewMore={() => navigate("/latest")}
+        />
+        <ApiContentSection
+          title="🎬 Movies"
+          items={moviesData?.data?.slice(0, 10) || []}
+          loading={moviesLoading}
+          onViewMore={() => navigate("/movies")}
+        />
+        <ApiContentSection
+          title="📺 Series"
+          items={seriesData?.data?.slice(0, 10) || []}
+          loading={seriesLoading}
+          onViewMore={() => navigate("/series")}
+        />
       </div>
 
       <BottomNav />

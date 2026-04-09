@@ -1,18 +1,37 @@
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import MovieCard from "@/components/MovieCard";
+import { useQuery } from "@tanstack/react-query";
+import ApiMovieCard from "@/components/ApiMovieCard";
 import BottomNav from "@/components/BottomNav";
-import { mockMovies } from "@/data/mockData";
-
-const ITEMS_PER_PAGE = 6;
+import { fetchLatestReleases } from "@/lib/api";
 
 const LatestPage = () => {
   const navigate = useNavigate();
-  const allLatest = [...mockMovies].sort((a, b) => b.year - a.year);
   const [page, setPage] = useState(1);
-  const totalPages = Math.ceil(allLatest.length / ITEMS_PER_PAGE);
-  const items = allLatest.slice(0, page * ITEMS_PER_PAGE);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["latest", page],
+    queryFn: () => fetchLatestReleases(page),
+  });
+
+  const [allItems, setAllItems] = useState<any[]>([]);
+
+  // Accumulate items across pages
+  const { data: pageData } = useQuery({
+    queryKey: ["latest-all", page],
+    queryFn: async () => {
+      const results = [];
+      for (let p = 1; p <= page; p++) {
+        const res = await fetchLatestReleases(p);
+        results.push(...(res.data || []));
+      }
+      return results;
+    },
+  });
+
+  const items = pageData || data?.data || [];
+  const totalPages = data?.total_pages || 1;
 
   return (
     <div className="min-h-screen gradient-dark pb-24">
@@ -24,11 +43,22 @@ const LatestPage = () => {
       </div>
 
       <div className="px-4 md:px-8">
-        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {items.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} />
-          ))}
-        </div>
+        {isLoading && items.length === 0 ? (
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i}>
+                <div className="aspect-[2/3] rounded-xl bg-secondary animate-pulse mb-2" />
+                <div className="h-4 bg-secondary rounded animate-pulse mb-1" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {items.map((item: any, idx: number) => (
+              <ApiMovieCard key={`${item.id}-${idx}`} item={item} />
+            ))}
+          </div>
+        )}
 
         {page < totalPages && (
           <div className="flex justify-center mt-6">
